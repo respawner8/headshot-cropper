@@ -75,7 +75,7 @@ export default function UploadZone({ onFileSelected }: UploadZoneProps) {
         onDragLeave={onDragLeave}
         onKeyDown={onKeyDown}
         onClick={() => inputRef.current?.click()}
-        className={`w-full max-w-lg h-64 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-4 cursor-pointer transition-colors select-none
+        className={`w-full h-52 sm:h-64 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-4 cursor-pointer transition-colors select-none
           ${dragging ? 'border-gray-900 bg-gray-50' : 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50'}`}
       >
         <svg className="w-10 h-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

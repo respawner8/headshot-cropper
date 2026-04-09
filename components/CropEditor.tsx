@@ -58,7 +58,7 @@ export default function CropEditor({ imageUrl, aiCrop, onCropChange, onImageLoad
 
   return (
     <div className="w-full flex flex-col items-center gap-6">
-      <div className="w-full max-w-2xl">
+      <div className="w-full">
         <ReactCrop
           crop={crop}
           onChange={(c) => setCrop(c)}
