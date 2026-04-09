@@ -17,6 +17,7 @@ interface CropEditorProps {
   imageUrl: string
   aiCrop: CropRect           // natural pixel coordinates
   aspect: AspectOption
+  resetKey: number           // increment to force crop back to aiCrop
   onCropChange: (crop: CropRect) => void  // reports natural pixel coordinates
   onImageLoad: (el: HTMLImageElement) => void
 }
@@ -28,7 +29,7 @@ function toDisplay(rect: CropRect, img: HTMLImageElement): PixelCrop {
   return { unit: 'px', x: rect.x * sx, y: rect.y * sy, width: rect.width * sx, height: rect.height * sy }
 }
 
-export default function CropEditor({ imageUrl, aiCrop, aspect, onCropChange, onImageLoad }: CropEditorProps) {
+export default function CropEditor({ imageUrl, aiCrop, aspect, resetKey, onCropChange, onImageLoad }: CropEditorProps) {
   const [crop, setCrop] = useState<Crop>({ unit: 'px', x: 0, y: 0, width: 0, height: 0 })
   const imgRef = useRef<HTMLImageElement>(null)
 
@@ -39,12 +40,12 @@ export default function CropEditor({ imageUrl, aiCrop, aspect, onCropChange, onI
     onImageLoad(img)
   }, [aiCrop, onImageLoad])
 
-  // Sync displayed crop when aiCrop changes from outside (e.g. Reset)
+  // Sync displayed crop when reset is triggered (resetKey increments) or aiCrop changes
   useEffect(() => {
     const img = imgRef.current
     if (!img || img.width === 0) return
     setCrop(toDisplay(aiCrop, img))
-  }, [aiCrop])
+  }, [aiCrop, resetKey])
 
   // Report crop changes back in natural pixel coordinates
   const onComplete = useCallback((c: PixelCrop) => {

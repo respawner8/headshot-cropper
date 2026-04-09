@@ -22,6 +22,7 @@ export default function Home() {
   const [currentCrop, setCurrentCrop] = useState<CropRect | null>(null)
   const [toast, setToast] = useState<ToastState | null>(null)
   const [aspect, setAspect] = useState<AspectOption>('3:4')
+  const [resetKey, setResetKey] = useState(0)
   const imgRef = useRef<HTMLImageElement | null>(null)
 
   const handleFileSelected = useCallback((file: File) => {
@@ -44,7 +45,10 @@ export default function Home() {
   }, [])
 
   const handleReset = useCallback(() => {
-    if (aiCrop) setCurrentCrop(aiCrop)
+    if (aiCrop) {
+      setCurrentCrop(aiCrop)
+      setResetKey(k => k + 1)
+    }
   }, [aiCrop])
 
   const handleExport = useCallback(async () => {
@@ -164,6 +168,7 @@ export default function Home() {
                 imageUrl={imageUrl}
                 aiCrop={aiCrop}
                 aspect={aspect}
+                resetKey={resetKey}
                 onCropChange={setCurrentCrop}
                 onImageLoad={handleEditorReady}
               />
