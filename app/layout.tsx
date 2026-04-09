@@ -1,34 +1,25 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from 'next'
+import { DM_Sans } from 'next/font/google'
+import './globals.css'
 import 'react-image-crop/dist/ReactCrop.css'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const dmSans = DM_Sans({
+  variable: '--font-dm-sans',
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+})
 
 export const metadata: Metadata = {
-  title: "Headshot Cropper",
-  description: "AI-powered headshot cropping tool",
-};
+  title: 'Headshot Cropper',
+  description: 'AI-powered headshot cropping tool',
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" className={`${dmSans.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col font-[family-name:var(--font-dm-sans)]">{children}</body>
     </html>
-  );
+  )
 }
