@@ -4,9 +4,9 @@ import { useRef, useState, useCallback, useEffect } from 'react'
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop'
 import type { CropRect } from '@/lib/suggestCrop'
 
-type AspectOption = 'free' | '1:1' | '3:4' | '4:5'
+export type AspectOption = 'free' | '1:1' | '3:4' | '4:5'
 
-const ASPECT_MAP: Record<AspectOption, number | undefined> = {
+export const ASPECT_MAP: Record<AspectOption, number | undefined> = {
   free: undefined,
   '1:1': 1,
   '3:4': 3 / 4,
@@ -15,86 +15,84 @@ const ASPECT_MAP: Record<AspectOption, number | undefined> = {
 
 interface CropEditorProps {
   imageUrl: string
-  aiCrop: CropRect
-  onCropChange: (crop: CropRect) => void
+  aiCrop: CropRect           // natural pixel coordinates
+  aspect: AspectOption
+  onCropChange: (crop: CropRect) => void  // reports natural pixel coordinates
   onImageLoad: (el: HTMLImageElement) => void
 }
 
-function rectToCrop(rect: CropRect): PixelCrop {
-  return { unit: 'px', x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+/** Convert natural pixel rect to displayed pixel rect */
+function toDisplay(rect: CropRect, img: HTMLImageElement): PixelCrop {
+  const sx = img.width / img.naturalWidth
+  const sy = img.height / img.naturalHeight
+  return { unit: 'px', x: rect.x * sx, y: rect.y * sy, width: rect.width * sx, height: rect.height * sy }
 }
 
-export default function CropEditor({ imageUrl, aiCrop, onCropChange, onImageLoad }: CropEditorProps) {
-  const [crop, setCrop] = useState<Crop>(rectToCrop(aiCrop))
-  const [aspect, setAspect] = useState<AspectOption>('3:4')
+export default function CropEditor({ imageUrl, aiCrop, aspect, onCropChange, onImageLoad }: CropEditorProps) {
+  const [crop, setCrop] = useState<Crop>({ unit: 'px', x: 0, y: 0, width: 0, height: 0 })
   const imgRef = useRef<HTMLImageElement>(null)
 
+  // When the visible image loads: convert aiCrop to displayed coords and notify parent
+  const handleImgLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget
+    setCrop(toDisplay(aiCrop, img))
+    onImageLoad(img)
+  }, [aiCrop, onImageLoad])
+
+  // Sync displayed crop when aiCrop changes from outside (e.g. Reset)
   useEffect(() => {
-    setCrop(rectToCrop(aiCrop))
+    const img = imgRef.current
+    if (!img || img.width === 0) return
+    setCrop(toDisplay(aiCrop, img))
   }, [aiCrop])
 
-  const onComplete = useCallback(
-    (c: PixelCrop) => {
-      onCropChange({ x: c.x, y: c.y, width: c.width, height: c.height })
-    },
-    [onCropChange]
-  )
+  // Report crop changes back in natural pixel coordinates
+  const onComplete = useCallback((c: PixelCrop) => {
+    const img = imgRef.current
+    if (!img || img.width === 0) return
+    const sx = img.naturalWidth / img.width
+    const sy = img.naturalHeight / img.height
+    onCropChange({
+      x: Math.round(c.x * sx),
+      y: Math.round(c.y * sy),
+      width: Math.round(c.width * sx),
+      height: Math.round(c.height * sy),
+    })
+  }, [onCropChange])
 
-  const handleAspectChange = (next: AspectOption) => {
-    setAspect(next)
-    const aspectValue = ASPECT_MAP[next]
-    if (aspectValue && imgRef.current) {
-      const { width, height } = imgRef.current
-      const centered = centerCrop(
-        makeAspectCrop({ unit: 'px', width: crop.width ?? aiCrop.width }, aspectValue, width, height),
-        width,
-        height
-      )
-      setCrop(centered)
-    }
-  }
-
-  const ASPECT_OPTIONS: AspectOption[] = ['free', '1:1', '3:4', '4:5']
+  // Re-center crop when aspect ratio changes
+  useEffect(() => {
+    const img = imgRef.current
+    if (!img || img.width === 0) return
+    const aspectValue = ASPECT_MAP[aspect]
+    if (!aspectValue) return
+    const centered = centerCrop(
+      makeAspectCrop({ unit: 'px', width: crop.width || img.width * 0.6 }, aspectValue, img.width, img.height),
+      img.width,
+      img.height
+    )
+    setCrop(centered)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aspect])
 
   return (
-    <div className="w-full flex flex-col items-center gap-4">
-      <div className="w-full">
-        <ReactCrop
-          crop={crop}
-          onChange={(c) => setCrop(c)}
-          onComplete={onComplete}
-          aspect={ASPECT_MAP[aspect]}
-          className="w-full rounded-xl overflow-hidden shadow-sm border border-gray-100"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            ref={imgRef}
-            src={imageUrl}
-            alt="Uploaded portrait for cropping"
-            className="w-full h-auto"
-            onLoad={(e) => onImageLoad(e.currentTarget)}
-          />
-        </ReactCrop>
-      </div>
-
-      <div className="w-full flex items-center gap-3">
-        <span className="text-xs text-gray-400 font-medium whitespace-nowrap">Aspect ratio</span>
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5" role="group" aria-label="Aspect ratio">
-          {ASPECT_OPTIONS.map((opt) => (
-            <button
-              key={opt}
-              onClick={() => handleAspectChange(opt)}
-              aria-pressed={aspect === opt}
-              aria-label={`Aspect ratio ${opt}`}
-              className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-                aspect === opt ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {opt}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="flex items-center justify-center w-full h-full">
+      <ReactCrop
+        crop={crop}
+        onChange={(c) => setCrop(c)}
+        onComplete={onComplete}
+        aspect={ASPECT_MAP[aspect]}
+        className="rounded-lg overflow-hidden shadow-md"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={imgRef}
+          src={imageUrl}
+          alt="Uploaded portrait for cropping"
+          style={{ maxHeight: 'min(62vh, 580px)', maxWidth: 'min(100%, 560px)', width: 'auto', display: 'block' }}
+          onLoad={handleImgLoad}
+        />
+      </ReactCrop>
     </div>
   )
 }
