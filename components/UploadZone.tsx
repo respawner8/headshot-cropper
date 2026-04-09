@@ -75,15 +75,17 @@ export default function UploadZone({ onFileSelected }: UploadZoneProps) {
         onDragLeave={onDragLeave}
         onKeyDown={onKeyDown}
         onClick={() => inputRef.current?.click()}
-        className={`w-full h-52 sm:h-64 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-4 cursor-pointer transition-colors select-none
-          ${dragging ? 'border-gray-900 bg-gray-50' : 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50'}`}
+        className={`w-full h-40 sm:h-48 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all select-none
+          ${dragging ? 'border-gray-800 bg-gray-50 scale-[1.01]' : 'border-gray-200 bg-gray-50 hover:border-gray-400 hover:bg-gray-100'}`}
       >
-        <svg className="w-10 h-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-        </svg>
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${dragging ? 'bg-gray-200' : 'bg-gray-100'}`}>
+          <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+          </svg>
+        </div>
         <div className="text-center">
-          <p className="text-sm font-medium text-gray-700">Drag &amp; drop or click to upload</p>
-          <p className="text-xs text-gray-400 mt-1">JPEG, PNG, WebP · Max {MAX_SIZE_MB} MB</p>
+          <p className="text-sm font-medium text-gray-700">Drag &amp; drop or <span className="text-gray-900 underline underline-offset-2">browse</span></p>
+          <p className="text-xs text-gray-400 mt-0.5">JPEG, PNG, WebP · max {MAX_SIZE_MB} MB</p>
         </div>
       </div>
 

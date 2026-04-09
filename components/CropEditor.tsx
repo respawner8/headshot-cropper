@@ -57,14 +57,14 @@ export default function CropEditor({ imageUrl, aiCrop, onCropChange, onImageLoad
   const ASPECT_OPTIONS: AspectOption[] = ['free', '1:1', '3:4', '4:5']
 
   return (
-    <div className="w-full flex flex-col items-center gap-6">
+    <div className="w-full flex flex-col items-center gap-4">
       <div className="w-full">
         <ReactCrop
           crop={crop}
           onChange={(c) => setCrop(c)}
           onComplete={onComplete}
           aspect={ASPECT_MAP[aspect]}
-          className="w-full rounded-xl overflow-hidden shadow-sm"
+          className="w-full rounded-xl overflow-hidden shadow-sm border border-gray-100"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -77,15 +77,16 @@ export default function CropEditor({ imageUrl, aiCrop, onCropChange, onImageLoad
         </ReactCrop>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-4">
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1" role="group" aria-label="Aspect ratio">
+      <div className="w-full flex items-center gap-3">
+        <span className="text-xs text-gray-400 font-medium whitespace-nowrap">Aspect ratio</span>
+        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5" role="group" aria-label="Aspect ratio">
           {ASPECT_OPTIONS.map((opt) => (
             <button
               key={opt}
               onClick={() => handleAspectChange(opt)}
               aria-pressed={aspect === opt}
               aria-label={`Aspect ratio ${opt}`}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
                 aspect === opt ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
