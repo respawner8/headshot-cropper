@@ -49,13 +49,14 @@ export async function suggestCrop(
     const { box } = detection
     const cropWidth = Math.round(box.width * 1.6)
     const cropHeight = Math.round(cropWidth / ASPECT_RATIO)
+
+    if (cropWidth <= 0 || cropHeight <= 0) return heuristicCrop(imageWidth, imageHeight)
+
     const x = Math.max(0, Math.round(box.x + box.width / 2 - cropWidth / 2))
     const y = Math.max(0, Math.round(box.y - cropHeight * 0.15))
 
     const clampedX = Math.min(x, imageWidth - cropWidth)
     const clampedY = Math.min(y, imageHeight - cropHeight)
-
-    if (cropWidth <= 0 || cropHeight <= 0) return heuristicCrop(imageWidth, imageHeight)
 
     return {
       x: Math.max(0, clampedX),

@@ -36,5 +36,7 @@ describe('heuristicCrop', () => {
     const crop = heuristicCrop(1200, 600)
     expect(crop.width).toBeGreaterThan(0)
     expect(crop.height).toBeGreaterThan(0)
+    expect(crop.x + crop.width).toBeLessThanOrEqual(1200)
+    expect(crop.y + crop.height).toBeLessThanOrEqual(600)
   })
 })
