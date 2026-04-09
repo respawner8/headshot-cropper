@@ -121,7 +121,7 @@ export default function Home() {
           <div key="idle" className="flex-1 flex flex-col items-center justify-center gap-8 px-4 animate-fadeIn">
             <div className="text-center">
               <h2 className="text-2xl font-semibold text-gray-900 tracking-tight">Upload your photo</h2>
-              <p className="text-sm text-gray-500 mt-2">AI detects the face and suggests the perfect headshot crop</p>
+              <p className="text-sm text-gray-500 mt-2">Smart face detection. Perfect headshot, every time.</p>
             </div>
             <div className="w-full max-w-sm">
               <UploadZone onFileSelected={handleFileSelected} />
