@@ -82,7 +82,7 @@ export default function CropEditor({ imageUrl, aiCrop, aspect, onCropChange, onI
         onChange={(c) => setCrop(c)}
         onComplete={onComplete}
         aspect={ASPECT_MAP[aspect]}
-        className="rounded-lg overflow-hidden shadow-md"
+        className="rounded-2xl overflow-hidden shadow-2xl shadow-black/25"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
