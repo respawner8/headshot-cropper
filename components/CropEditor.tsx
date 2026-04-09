@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useCallback, useEffect } from 'react'
-import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop'
+import ReactCrop, { Crop, PixelCrop } from 'react-image-crop'
 import type { CropRect } from '@/lib/suggestCrop'
 
 export type AspectOption = 'free' | '1:1' | '3:4' | '4:5'
@@ -32,6 +32,8 @@ function toDisplay(rect: CropRect, img: HTMLImageElement): PixelCrop {
 export default function CropEditor({ imageUrl, aiCrop, aspect, resetKey, onCropChange, onImageLoad }: CropEditorProps) {
   const [crop, setCrop] = useState<Crop>({ unit: 'px', x: 0, y: 0, width: 0, height: 0 })
   const imgRef = useRef<HTMLImageElement>(null)
+  const cropRef = useRef(crop) // tracks latest crop without causing effect deps issues
+  cropRef.current = crop
 
   // When the visible image loads: convert aiCrop to displayed coords and notify parent
   const handleImgLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -61,18 +63,39 @@ export default function CropEditor({ imageUrl, aiCrop, aspect, resetKey, onCropC
     })
   }, [onCropChange])
 
-  // Re-center crop when aspect ratio changes
+  // Resize crop to new aspect ratio, keeping the current crop center in place
   useEffect(() => {
     const img = imgRef.current
     if (!img || img.width === 0) return
     const aspectValue = ASPECT_MAP[aspect]
     if (!aspectValue) return
-    const centered = centerCrop(
-      makeAspectCrop({ unit: 'px', width: crop.width || img.width * 0.6 }, aspectValue, img.width, img.height),
-      img.width,
-      img.height
-    )
-    setCrop(centered)
+
+    const current = cropRef.current as PixelCrop
+    const cw = current.width || img.width * 0.6
+    const ch = current.height || img.width * 0.6
+    const centerX = (current.x || 0) + cw / 2
+    const centerY = (current.y || 0) + ch / 2
+
+    // Maintain current width, adjust height to new aspect ratio
+    let newWidth = cw
+    let newHeight = newWidth / aspectValue
+
+    // Clamp if height exceeds image
+    if (newHeight > img.height) {
+      newHeight = img.height
+      newWidth = newHeight * aspectValue
+    }
+    // Clamp if width exceeds image
+    if (newWidth > img.width) {
+      newWidth = img.width
+      newHeight = newWidth / aspectValue
+    }
+
+    // Re-center on same point, clamped to image bounds
+    const newX = Math.max(0, Math.min(centerX - newWidth / 2, img.width - newWidth))
+    const newY = Math.max(0, Math.min(centerY - newHeight / 2, img.height - newHeight))
+
+    setCrop({ unit: 'px', x: newX, y: newY, width: newWidth, height: newHeight })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aspect])
 
