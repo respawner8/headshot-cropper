@@ -35,18 +35,24 @@ export default function CropEditor({ imageUrl, aiCrop, aspect, resetKey, onCropC
   const cropRef = useRef(crop) // tracks latest crop without causing effect deps issues
   cropRef.current = crop
 
-  // When the visible image loads: convert aiCrop to displayed coords and notify parent
+  // When the visible image loads: defer crop calculation until after layout
+  // (cached images fire onLoad before the browser has computed img.width,
+  // so img.width = 0 at onLoad time — rAF waits for the first layout paint)
   const handleImgLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget
-    setCrop(toDisplay(aiCrop, img))
     onImageLoad(img)
+    requestAnimationFrame(() => {
+      if (img.width > 0) setCrop(toDisplay(aiCrop, img))
+    })
   }, [aiCrop, onImageLoad])
 
-  // Sync displayed crop when reset is triggered (resetKey increments) or aiCrop changes
+  // Sync displayed crop when reset is triggered (resetKey increments)
   useEffect(() => {
     const img = imgRef.current
-    if (!img || img.width === 0) return
-    setCrop(toDisplay(aiCrop, img))
+    if (!img) return
+    requestAnimationFrame(() => {
+      if (img.width > 0) setCrop(toDisplay(aiCrop, img))
+    })
   }, [aiCrop, resetKey])
 
   // Report crop changes back in natural pixel coordinates
